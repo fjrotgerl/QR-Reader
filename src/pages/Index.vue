@@ -4,7 +4,9 @@
     <div class="flex flex-center q-layout-padding">
       <p class="text-h6 text-weight-regular w-80">Selecciona el archivo: </p>
       <q-uploader
-        url="http://localhost:4444/upload"
+        url="https://content.dropboxapi.com/2/files/upload"
+        method="POST"
+        :headers="uploadHeaders"
         ref="uploaderRef"
         @added="isUploadButtonDisabled = false"
         @removed="isUploadButtonDisabled = true"
@@ -28,6 +30,7 @@
 
 <script>
   import qrcode from 'qrcode';
+  import saveAs from 'file-saver';
 
   export default {
     name: 'PageIndex',
@@ -35,6 +38,11 @@
       return {
         // Variables
         isUploadButtonDisabled: true,
+        uploadHeaders: [
+          {'Authorization': 'Bearer bkAs6K8C15AAAAAAAAAAOnboX3_8iGF_KFQ_ga5HskvIUDFByEJydoEJcHP_VP8b'},
+          {'Dropbox-API-Arg': "{\"path\": \"/test.png\", \"mode\": \"add\",\"autorename\": true,\"mute\": false,\"strict_conflict\": false}"},
+          {"Content-Type": "application/octet-stream"}
+        ],
         // Functions
         customUploadButton: () => {
           this.$refs.uploaderRef.upload()
@@ -46,27 +54,17 @@
             console.log('success!');
           })
         },
-        dropbox: () => {
-          // this.$axios.post("https://content.dropboxapi.com/2/files/download")
-          // //   , {
-          // //   headers: {
-          // //     "Authorization": "Bearer bkAs6K8C15AAAAAAAAAAM_BSwzMnqpFT4SE8Kpr2xAFsY0nmY0jrxVkIgtjWrTzK",
-          // //     "Dropbox-API-Arg": "{\"path\": \"/Homework/math/Prime_Numbers.txt\"}"
-          // //   }
-          // // })
-          //   .then(response => console.log(response))
-          //   .catch(error => console.error(error))
-          this.$axios.post("https://api.dropboxapi.com/2/users/get_account", {
-            data: "{\"account_id\": \"dbid:AAH4f99T0taONIb-OurWxbNQ6ywGRopQngc\"}"
-            },
-            {
+        dropbox: async () => {
+          await fetch('https://content.dropboxapi.com/2/files/download', {
+            method: 'POST',
             headers: {
-              "Authorization": "Bearer bkAs6K8C15AAAAAAAAAANivquWVMzvaiaLY3w4tNaMHsLA3eFcpuPMN5AGI8eDjy",
-              "Content-Type": "application/json"
+              'Authorization': 'Bearer bkAs6K8C15AAAAAAAAAAM_BSwzMnqpFT4SE8Kpr2xAFsY0nmY0jrxVkIgtjWrTzK',
+              'Dropbox-API-Arg': "{\"path\": \"/101015.jpg\"}"
             }
           })
-            .then(response => console.log(response.json()))
-            .catch(error => console.error(error))
+            .then(response => response.blob())
+            .then(blob => saveAs(blob, "img.png"))
+            .catch(error => console.error(error));
         }
       }
     }
